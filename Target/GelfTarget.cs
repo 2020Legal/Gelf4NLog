@@ -90,8 +90,6 @@ namespace NLog.Targets.Gelf
                 logEvent.Properties.Add(ConverterConstants.PromoteObjectPropertiesMarker, logEvent.Parameters.Last());
             }
 
-            this.Layout.Render(logEvent);
-
             var jsonObject = Converter.GetGelfJson(logEvent, this.Layout, Facility);
             if (jsonObject == null) return;
             _lazyITransport.Value
