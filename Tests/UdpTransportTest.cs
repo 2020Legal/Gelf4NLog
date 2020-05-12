@@ -21,7 +21,7 @@ namespace NLog.Targets.Gelf.UnitTest
                 var transport = new UdpTransport(transportClient.Object);
                 var converter = new Mock<IConverter>();
                 var dnslookup = new Mock<DnsBase>();
-                converter.Setup(c => c.GetGelfJson(It.IsAny<LogEventInfo>(), It.IsAny<string>())).Returns(new JObject());
+                converter.Setup(c => c.GetGelfJson(It.IsAny<LogEventInfo>(), It.IsAny<Layouts.Layout>(), It.IsAny<string>())).Returns(new JObject());
 
                 var target = new GelfTarget(new []{transport}, converter.Object, dnslookup.Object) {
                     Endpoint = "udp://127.0.0.1:12201"
@@ -32,7 +32,7 @@ namespace NLog.Targets.Gelf.UnitTest
                 target.WriteLogEventInfo(logEventInfo);
 
                 transportClient.Verify(t => t.Send(It.IsAny<byte[]>(), It.IsAny<Int32>(), It.IsAny<IPEndPoint>()), Times.Once());
-                converter.Verify(c => c.GetGelfJson(It.IsAny<LogEventInfo>(), It.IsAny<string>()), Times.Once());
+                converter.Verify(c => c.GetGelfJson(It.IsAny<LogEventInfo>(), It.IsAny<Layouts.Layout>(), It.IsAny<string>()), Times.Once());
             }
 
             [Test]
@@ -44,7 +44,7 @@ namespace NLog.Targets.Gelf.UnitTest
                 jsonObject.Add("full_message", JToken.FromObject(message));
 
                 var converter = new Mock<IConverter>();
-                converter.Setup(c => c.GetGelfJson(It.IsAny<LogEventInfo>(), It.IsAny<string>())).Returns(jsonObject).Verifiable();
+                converter.Setup(c => c.GetGelfJson(It.IsAny<LogEventInfo>(), It.IsAny<Layouts.Layout>(), It.IsAny<string>())).Returns(jsonObject).Verifiable();
                 var transportClient = new Mock<ITransportClient>();
                 transportClient.Setup(t => t.Send(It.IsAny<byte[]>(), It.IsAny<Int32>(), It.IsAny<IPEndPoint>())).Verifiable();
                
@@ -57,7 +57,7 @@ namespace NLog.Targets.Gelf.UnitTest
                 target.WriteLogEventInfo(new LogEventInfo());
 
                 transportClient.Verify(t => t.Send(It.IsAny<byte[]>(), It.IsAny<Int32>(), It.IsAny<IPEndPoint>()), Times.Exactly(2));
-                converter.Verify(c => c.GetGelfJson(It.IsAny<LogEventInfo>(), It.IsAny<string>()), Times.Once());
+                converter.Verify(c => c.GetGelfJson(It.IsAny<LogEventInfo>(), It.IsAny<Layouts.Layout>(), It.IsAny<string>()), Times.Once());
             }
         }
         

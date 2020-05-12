@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using NLog;
+using NLog.Layouts;
 using NUnit.Framework;
 
 namespace NLog.Targets.Gelf.UnitTest
@@ -26,7 +27,7 @@ namespace NLog.Targets.Gelf.UnitTest
                 logEvent.Properties.Add("custompropertyint", 199);
                 logEvent.Properties.Add("custompropertyarray", new[]{1,2,3});
 
-                var jsonObject = new GelfConverter().GetGelfJson(logEvent, "TestFacility");
+                var jsonObject = new GelfConverter().GetGelfJson(logEvent, new SimpleLayout(), "TestFacility");
 
                 Assert.IsNotNull(jsonObject);
                 Assert.AreEqual("1.0", jsonObject.Value<string>("version"));
@@ -58,7 +59,7 @@ namespace NLog.Targets.Gelf.UnitTest
                                        Exception = new DivideByZeroException("div by 0")
                                    };
 
-                var jsonObject = new GelfConverter().GetGelfJson(logEvent, "TestFacility");
+                var jsonObject = new GelfConverter().GetGelfJson(logEvent, new SimpleLayout(), "TestFacility");
 
                 Assert.IsNotNull(jsonObject);
                 Assert.AreEqual("Test Message", jsonObject.Value<string>("short_message"));
@@ -80,7 +81,7 @@ namespace NLog.Targets.Gelf.UnitTest
                     Exception = new Exception("Outer Exception Detail", new Exception("Inner Exception Detail"))
                 };
 
-                var jsonObject = new GelfConverter().GetGelfJson(logEvent, "TestFacility");
+                var jsonObject = new GelfConverter().GetGelfJson(logEvent, new SimpleLayout(), "TestFacility");
 
                 Assert.IsNotNull(jsonObject);
                 Assert.AreEqual("Test Message", jsonObject.Value<string>("short_message"));
@@ -110,7 +111,7 @@ namespace NLog.Targets.Gelf.UnitTest
                     Exception = outerException
                 };
 
-                var jsonObject = new GelfConverter().GetGelfJson(logEvent, "TestFacility");
+                var jsonObject = new GelfConverter().GetGelfJson(logEvent, new SimpleLayout(), "TestFacility");
 
                 Assert.IsNotNull(jsonObject);
                 Assert.AreEqual("Test Message", jsonObject.Value<string>("short_message"));
@@ -134,7 +135,7 @@ namespace NLog.Targets.Gelf.UnitTest
                     Message = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus interdum est in est cursus vitae pellentesque felis lobortis. Donec a orci quis ante viverra eleifend ac et quam. Donec imperdiet libero ut justo tincidunt non tristique mauris gravida. Fusce sapien eros, tincidunt a placerat nullam."
                 };
 
-                var jsonObject = new GelfConverter().GetGelfJson(logEvent, "TestFacility");
+                var jsonObject = new GelfConverter().GetGelfJson(logEvent, new SimpleLayout(), "TestFacility");
 
                 Assert.IsNotNull(jsonObject);
                 Assert.AreEqual(250, jsonObject.Value<string>("short_message").Length);
@@ -147,7 +148,7 @@ namespace NLog.Targets.Gelf.UnitTest
                 var logEvent = new LogEventInfo { Message = "Test" };
                 logEvent.Properties.Add("Id", "not_important");
 
-                var jsonObject = new GelfConverter().GetGelfJson(logEvent, "TestFacility");
+                var jsonObject = new GelfConverter().GetGelfJson(logEvent, new SimpleLayout(), "TestFacility");
 
                 Assert.IsNotNull(jsonObject);
                 Assert.IsNull(jsonObject["_id"]);
@@ -160,7 +161,7 @@ namespace NLog.Targets.Gelf.UnitTest
             {
                 var logEvent = new LogEventInfo {Message = "Test"};
 
-                var jsonObject = new GelfConverter().GetGelfJson(logEvent, facility);
+                var jsonObject = new GelfConverter().GetGelfJson(logEvent, new SimpleLayout(), facility);
 
                 Assert.AreEqual("GELF", jsonObject.Value<string>("facility"));
             }
