@@ -5,6 +5,7 @@ using System.Net;
 using NLog;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using NLog.Layouts;
 
 namespace NLog.Targets.Gelf
 {
@@ -13,10 +14,10 @@ namespace NLog.Targets.Gelf
         private const int ShortMessageMaxLength = 250;
         private const string GelfVersion = "1.0";
 
-        public JObject GetGelfJson(LogEventInfo logEventInfo, string facility)
+        public JObject GetGelfJson(LogEventInfo logEventInfo, Layout layout, string facility)
         {
             //Retrieve the formatted message from LogEventInfo
-            var logEventMessage = logEventInfo.FormattedMessage;
+            var logEventMessage = layout.Render(logEventInfo);
             if (logEventMessage == null) return null;
 
             //If we are dealing with an exception, pass exception properties to LogEventInfo properties
@@ -39,6 +40,10 @@ namespace NLog.Targets.Gelf
                 shortMessage = shortMessage.Substring(0, ShortMessageMaxLength);
             }
 
+            var dateTime = logEventInfo.TimeStamp;
+            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var unixDateTime = (dateTime.ToUniversalTime() - epoch).TotalSeconds + (dateTime.Millisecond / 1000d);
+
             //Construct the instance of GelfMessage
             //See https://github.com/Graylog2/graylog2-docs/wiki/GELF "Specification (version 1.0)"
             var gelfMessage = new GelfMessage
@@ -47,7 +52,7 @@ namespace NLog.Targets.Gelf
                                       Host = Dns.GetHostName(),
                                       ShortMessage = shortMessage,
                                       FullMessage = logEventMessage,
-                                      Timestamp = logEventInfo.TimeStamp,
+                                      Timestamp = unixDateTime,
                                       Level = GetSeverityLevel(logEventInfo.Level),
                                       //Spec says: facility must be set by the client to "GELF" if empty
                                       Facility = (string.IsNullOrEmpty(facility) ? "GELF" : facility),
